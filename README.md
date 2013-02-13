@@ -26,7 +26,7 @@ machines** via RHCS.
 * virtual machine actions:
   * suspend, resume, stop
   * offline migration
-
+  * disk attach/detach
 
 ## Cluster modes
 

@@ -1,12 +1,1 @@
-#!/bin/bash 
-
-# CERIT Scientific Cloud, 2013
-# based on scripts from one:src/vmm_mad/remotes/kvm/
-#   Copyright 2002-2012, OpenNebula Project Leads (OpenNebula.org)
-#   Licensed under the Apache License, Version 2.0
-
-source $(dirname $0)/rhcsrc
-source $(dirname $0)/../../scripts_common.sh
-
-error_message "Domain save/restore is not supportd by RHCS VMM driver"
-exit -1
+noop
