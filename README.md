@@ -129,5 +129,5 @@ Example:
 
     $ onehost create node1.example.com --im kvm --vm kvm_rhcs --net dummy
 
-[KVM]: http://opennebula.org/documentation:documentation:kvm "OpenNebula KVM driver"
+[KVM]: http://opennebula.org/documentation:documentation:kvmg "OpenNebula KVM driver"
 [HA]:  http://www.redhat.com/products/enterprise-linux-add-ons/high-availability/ "Red Hat® Enterprise Linux® High Availability Add-On"
