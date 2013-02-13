@@ -7,8 +7,8 @@ also freely available in RHEL-like systems (CentOS, SL, Oracle Linux). Other
 distributions may work as well, but not all required RHCS components
 in current versions should be present.
 
-Following scripts add support into OpenNebula for managing **truly HA virtual
-machines** via RHCS.
+Following scripts add support for managing **truly HA virtual machines**
+with OpenNebula via RHCS.
 
 ### Supported features
 
@@ -30,8 +30,8 @@ machines** via RHCS.
 
 ## Cluster modes
 
-* single-node cluster
-* cluster
+* single-node
+* multi-node
 
 ## Physical host
 
@@ -48,8 +48,8 @@ machines** via RHCS.
 #### Cluster configuration management
 
 Cluster configuration is managed by `ccs` command. You must have `ricci`
-daemon konfigured and running on all nodes and all nodes must by able
-to synchronize configuration on all other cluster nodes password-less.
+daemon configured and running on all nodes and any node must be able
+to synchronize configuration on all other nodes without password.
 
 Example:
 
@@ -57,25 +57,29 @@ Example:
 
 #### Node/host names
 
-Management scripts can create failover domain with list of preferred
-cluster node for each virtual machine. To enable this functionality,
-RHCS cluster nodes must have same name as OpenNebula hosts. This binding
-is also required for virtual machine migration.
+For multi-node clusters management scripts can create failover domain with
+each virtual machine's preferred node. It ensures that virtual machine is
+running on host chosen by OpenNebula, if the host is suitable for running
+virtual machines. Failover domains can work correctly only if **RHCS cluster
+node names are identical with OpenNebula hosts**. This binding is also
+required for virtual machines migration.
 
 Example - RHCS `/etc/cluster/cluster.conf`:
 
     <?xml version="1.0" ?>
     <cluster config_version="1" name="cluster">
-        <clusternode name="node1.example.com" nodeid="1" />
-        <clusternode name="node2.example.com" nodeid="2" />
+        <clusternodes>
+            <clusternode name="node1.example.com" nodeid="1" />
+            <clusternode name="node2.example.com" nodeid="2" />
+        </clusternodes>
     </cluster>
 
 Example - OpenNebula hosts:
 
     $ onehost list
      ID   NAME                CLUSTER   RVM   ALLOCATED_CPU     ALLOCATED_MEM   STAT
-    666   node1.example.com   -           0   0 / 1200 (0%)   0K / 62.9G (0%)   on    
-    667   node2.example.com   -           0   0 / 1200 (0%)   0K / 62.9G (0%)   on    
+    666   node1.example.com   -           0   0 / 1200 (0%)   0K / 62.9G (0%)   on
+    667   node2.example.com   -           0   0 / 1200 (0%)   0K / 62.9G (0%)   on
 
 #### Priviledged commands execution via `sudo`
 
