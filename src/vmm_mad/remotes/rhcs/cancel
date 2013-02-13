@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# CERIT Scientific Cloud, 2013
+# based on scripts from one:src/vmm_mad/remotes/kvm/
+#   Copyright 2002-2012, OpenNebula Project Leads (OpenNebula.org)
+#   Licensed under the Apache License, Version 2.0
+
+source $(dirname $0)/rhcsrc
+source $(dirname $0)/../../scripts_common.sh
+
+deploy_id=$1
+
+exec_and_log "$RHCS_CLUSVCADM -d vm:$deploy_id" \
+    "Could not disable/shutdown RHCS VM $deploy_id"
+
+exec_and_log "$RHCS_CCS_CHECK" \
+    "Configuration on some cluster node(s) is out of sync"
+
+exec_and_log "$RHCS_CCS --rmvm $deploy_id" \
+    "Could not remove RHCS VM $deploy_id"
+
+if [ "x$CREATE_RHCS_DOMAIN" == 'xyes' ]; then
+    $RHCS_CCS --rmfailoverdomain $deploy_id &>/dev/null
+fi
+
+exec_and_log "$RHCS_CCS_SYNC" \
+    "Could synchronize cluster conf."

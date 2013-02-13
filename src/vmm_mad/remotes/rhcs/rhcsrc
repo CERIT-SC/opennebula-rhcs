@@ -1,0 +1,38 @@
+# CERIT Scientific Cloud, 2013
+# based on scripts from one:src/vmm_mad/remotes/kvm/
+#   Copyright 2002-2012, OpenNebula Project Leads (OpenNebula.org)
+#   Licensed under the Apache License, Version 2.0
+
+export LANG=C
+
+export LIBVIRT_URI=qemu:///system
+
+#export QEMU_PROTOCOL=qemu+ssh
+export QEMU_PROTOCOL=qemu+tcp
+
+# Seconds to wait for RHCS resource start
+export DEPLOY_TIMEOUT=60
+
+# Red Hat Cluster Suite management commands
+export RHCS_CCS='sudo /usr/sbin/ccs -h localhost'
+export RHCS_CCS_SYNC="$RHCS_CCS --sync --activate"
+export RHCS_CCS_CHECK="$RHCS_CCS --checkconf"
+export RHCS_CLUSVCADM='sudo /usr/sbin/clusvcadm'
+export RHCS_CLUSTAT='sudo /usr/sbin/clustat'
+export RHCS_CMAN_TOOL='sudo /usr/sbin/cman_tool'
+
+# Create own failover domain for each virtual machine?
+# (RHCS nodes must have same name as OpenNebula hosts)
+export CREATE_RHCS_DOMAIN=yes
+
+# VM resource parameters
+# see "/usr/share/cluster/vm.sh meta-data" output
+export RHCS_VM_AUTOSTART=1
+export RHCS_VM_RECOVERY=restart
+export RHCS_VM_MAX_RESTARTS=0
+export RHCS_VM_RESTART_EXPIRE_TIME=0
+export RHCS_VM_TUNNELLED=
+export RHCS_VM_MIGRATE=live
+export RHCS_VM_MIGRATION_MAPPING=
+export RHCS_VM_DEPEND=
+export RHCS_VM_DEPEND_MODE=hard

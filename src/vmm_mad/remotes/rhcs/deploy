@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# CERIT Scientific Cloud, 2013
+# based on scripts from one:src/vmm_mad/remotes/kvm/
+#   Copyright 2002-2012, OpenNebula Project Leads (OpenNebula.org)
+#   Licensed under the Apache License, Version 2.0
+
+DRIVER_PATH=$(dirname $0)
+source $DRIVER_PATH/rhcsrc
+source $DRIVER_PATH/../../scripts_common.sh
+
+domain=$1
+
+mkdir -p `dirname $domain`
+cat > $domain
+
+XPATH="$DRIVER_PATH/../../datastore/xpath.rb -s"
+deploy_id=`$XPATH '/domain/name' <$domain`
+
+function check_resource {
+    $RHCS_CLUSTAT -ls vm:$deploy_id | \
+        egrep -qi 'Current State\s*:\s*started'
+}
+
+if [ "x$deploy_id" != 'x' ]; then
+    # first check current cluster configurations
+    exec_and_log "$RHCS_CCS_CHECK" \
+        "Configuration on some cluster node(s) is out of sync"
+
+    # create RHCS failover domain for each VM resource
+    if [ "x$CREATE_RHCS_DOMAIN" == 'xyes' ]; then
+        NODE_NAME=`$RHCS_CMAN_TOOL status | awk -F: '$1=="Node name" {print $2}'`
+
+        exec_and_log "$RHCS_CCS --addfailoverdomain $deploy_id" \
+            "Could not add failover domain for $deploy_id"
+        exec_and_log "$RHCS_CCS --addfailoverdomainnode $deploy_id $NODE_NAME" \
+            "Could not add node $NODE_NAME into failover domain for $deploy_id"
+
+        rhcs_domain="domain=$deploy_id"
+    fi
+
+    # create RHCS VM resource
+    data=`$RHCS_CCS --addvm $deploy_id $rhcs_domain \
+        "xmlfile=$domain" "use_virsh=1" \
+        "autostart=$RHCS_VM_AUTOSTART" \
+        "recovery=$RHCS_VM_RECOVERY" \
+        "max_restarts=$RHCS_VM_MAX_RESTARTS" \
+        "restart_expire_time=$RHCS_VM_RESTART_EXPIRE_TIME" \
+        "tunnelled=$RHCS_VM_TUNNELLED" \
+        "migrate=$RHCS_VM_MIGRATE" \
+        "migration_uri=$QEMU_PROTOCOL://%s/system" \
+        "migration_mapping=$RHCS_VM_MIGRATION_MAPPING" \
+        "depend=$RHCS_VM_DEPEND" \
+        "depend_mode=$RHCS_VM_DEPEND_MODE" 2>&1`
+
+    if [ "x$?" != "x0" ]; then
+        error_message "Could not add RHCS VM $deploy_id: $data"
+        exit -1
+    fi
+
+    # synchronize cluster configuration
+    data=`$RHCS_CCS_SYNC 2>&1`
+
+    if [ "x$?" != "x0" ]; then
+        error_message "Could not synchronize cluster conf.: $data"
+        exit -1
+    fi
+
+    # wait until RHCS VM resource is started or
+    # rollback all previous changes
+    TIMEOUT=${DEPLOY_TIMEOUT:-60}
+    retry $DEPLOY_TIMEOUT check_resource
+
+    if [ "x$?" != 'x0' ]; then
+        $DRIVER_PATH/cancel $deploy_id &>/dev/null
+        error_message "Could not start domain from $domain"
+        exit -1
+    fi
+else
+    error_message "Could not find domain name in $domain, only libvirt XML domain supported"
+    exit -1
+fi
+
+echo $deploy_id

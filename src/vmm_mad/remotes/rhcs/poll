@@ -1,0 +1,182 @@
+#!/usr/bin/env ruby
+
+# -------------------------------------------------------------------------- #
+# Copyright 2002-2012, OpenNebula Project Leads (OpenNebula.org)             #
+#                                                                            #
+# Licensed under the Apache License, Version 2.0 (the "License"); you may    #
+# not use this file except in compliance with the License. You may obtain    #
+# a copy of the License at                                                   #
+#                                                                            #
+# http://www.apache.org/licenses/LICENSE-2.0                                 #
+#                                                                            #
+# Unless required by applicable law or agreed to in writing, software        #
+# distributed under the License is distributed on an "AS IS" BASIS,          #
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   #
+# See the License for the specific language governing permissions and        #
+# limitations under the License.                                             #
+#--------------------------------------------------------------------------- #
+
+require 'pp'
+require 'rexml/document'
+
+ENV['LANG']='C'
+
+module RHCS
+    CONF={
+        'RHCS_CLUSTAT' => 'sudo /usr/sbin/clustat'
+    }
+
+    def self.get_vm_info(vm_id)
+        data = get_all_vm_info[vm_id]
+
+        if !data
+            return {:STATE => 'd'}
+        else
+            return data
+        end
+    end
+
+    def self.get_all_vm_info
+    begin
+        text=`#{CONF['RHCS_CLUSTAT']} -fx`
+        doc=REXML::Document.new(text)
+
+        domains=Hash.new
+        doc.elements.each('clustat/groups/group') do |ele|
+            if ele.attributes['name'] =~ /^vm:(.*)$/
+                deploy_id=$1
+
+                dom_hash=Hash.new
+                dom_hash[:name]=deploy_id
+                dom_hash[:state]=get_state(ele.attributes['state_str'])
+
+                domains[dom_hash[:name]]=dom_hash
+            end
+        end
+
+        domains
+    rescue
+        STDERR.puts "Error executing #{CONF['XM_POLL']}"
+        nil
+    end
+    end
+
+private
+
+    # in project 'rgmanager' file 'src/clulib/rg_strings.c':
+    # const struct string_val rg_state_strings[] = {...}
+    def self.get_state(state)
+        case state.gsub('-', '')
+        when *%w{starting started stopping checking recovering migrating}
+            'a'
+        when *%w{disabled stopped recoverable}
+            'd'
+        when *%w{failed uninitialized}
+            'e'
+        else
+            '-'
+        end
+    end
+end
+
+def select_hypervisor
+    hypervisor=nil
+    params=ARGV.clone
+
+    params.each_with_index do |param, index|
+        case param
+        when '--rhcs'
+            hypervisor=RHCS
+            ARGV.delete_at(index)
+        end
+    end
+
+    if !hypervisor
+        case $0
+        when %r{/vmm\/rhcs/}
+            hypervisor=RHCS
+        when %r{/vmm\/kvm/} #TODO: vyhodit!?
+            hypervisor=RHCS
+        end
+    end
+
+    hypervisor
+end
+
+def load_vars(hypervisor)
+    case hypervisor.name
+    when 'RHCS'
+        file='rhcsrc'
+        #vars=%w{LIBVIRT_URI}
+    else
+        return
+    end
+
+begin
+    env=`. #{File.dirname($0)+"/#{file}"};env`
+
+    lines=env.split("\n")
+    vars.each do |var|
+        lines.each do |line|
+            if a=line.match(/^(#{var})=(.*)$/)
+                hypervisor::CONF[var]=a[2]
+                break
+            end
+        end
+    end
+rescue
+end
+end
+
+
+def print_data(name, value)
+    if value
+        "#{name.to_s.upcase}=#{value}"
+    else
+        nil
+    end
+end
+
+
+
+def print_one_vm_info(hypervisor, vm_id)
+    info=hypervisor.get_vm_info(vm_id)
+
+    exit(-1) if !info
+
+    #info.merge!(get_interface_statistics(vm_id))
+
+    values=info.map do |key, value|
+        print_data(key, value)
+    end
+
+    puts values.zip.join(' ')
+end
+
+def print_all_vm_info(hypervisor)
+    require 'yaml'
+    require 'base64'
+    require 'zlib'
+
+    vms=hypervisor.get_all_vm_info
+
+    compressed=Zlib::Deflate.deflate(vms.to_yaml)
+    puts Base64.encode64(compressed).delete("\n")
+end
+
+hypervisor=select_hypervisor
+
+if !hypervisor
+    STDERR.puts "Could not detect hypervisor"
+    exit(-1)
+end
+
+load_vars(hypervisor)
+
+vm_id=ARGV[0]
+
+if vm_id
+    print_one_vm_info(hypervisor, vm_id)
+else
+    print_all_vm_info(hypervisor)
+end

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# CERIT Scientific Cloud, 2013
+# based on scripts from one:src/vmm_mad/remotes/kvm/
+#   Copyright 2002-2012, OpenNebula Project Leads (OpenNebula.org)
+#   Licensed under the Apache License, Version 2.0
+
+source $(dirname $0)/rhcsrc
+source $(dirname $0)/../../scripts_common.sh
+
+deploy_id=$1
+dest_host=$2
+
+exec_and_log "$RHCS_CLUSVCADM -M vm:$deploy_id -m $dest_host" \
+    "Could not migrate $deploy_id to $dest_host"
+
+if [ "x$CREATE_RHCS_DOMAIN" == 'xyes' ]; then
+    (
+        # update failover domain with new VM host
+        $RHCS_CCS_CHECK    #TODO: rm/add/add pouze pokud je OK
+        $RHCS_CCS --rmfailoverdomain        $deploy_id
+        $RHCS_CCS --addfailoverdomain       $deploy_id
+        $RHCS_CCS --addfailoverdomainnode   $deploy_id $dest_host
+        $RHCS_CCS_SYNC
+    ) &>/dev/null
+
+    exit 0
+fi
