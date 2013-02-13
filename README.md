@@ -3,7 +3,7 @@
 *Red Hat® Cluster Suite* (RHCS) is set of components for building scalable,
 load balancing and highly-available (HA) clusters. RHCS is part of
 [High Availability Add-On][HA] in the Red Hat® Enterprise Linux®, but is
-also freely available in RHEL-like (CentOS, SL, Oracle Linux). Other
+also freely available in RHEL-like systems (CentOS, SL, Oracle Linux). Other
 distributions may work as well, but not all required RHCS components
 in current versions should be present.
 
@@ -127,7 +127,7 @@ For OpenNebula hosts only following combination of drivers is supported:
 
 Example:
 
-    onehost create node1.example.com --im kvm --vm kvm_rhcs --net dummy
+    $ onehost create node1.example.com --im kvm --vm kvm_rhcs --net dummy
 
 [KVM]: http://opennebula.org/documentation:documentation:kvm "OpenNebula KVM driver"
 [HA]:  http://www.redhat.com/products/enterprise-linux-add-ons/high-availability/ "Red Hat® Enterprise Linux® High Availability Add-On"
