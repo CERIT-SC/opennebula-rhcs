@@ -30,8 +30,13 @@ with OpenNebula via RHCS.
 
 ## Cluster modes
 
-* single-node
-* multi-node
+### single-node
+
+![RHCS cluster as single-node schema](https://raw.github.com/CERIT-SC/opennebula-rhcs/master/img/rhcs-single.png)
+
+### multi-node
+
+![RHCS cluster as multi-node schema](https://raw.github.com/CERIT-SC/opennebula-rhcs/master/img/rhcs-multi.png)
 
 ## Physical host
 
@@ -83,7 +88,7 @@ Example - OpenNebula hosts:
 
 #### Priviledged commands execution via `sudo`
 
-**oneadmin** must be able to mange RHCS cluster. Following
+**oneadmin** must be able to manage RHCS cluster. Following
 configuration must be present in your `/etc/sudoers` (use `visudo`
 for change):
 
