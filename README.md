@@ -43,10 +43,11 @@ with OpenNebula via RHCS.
 ### Requirements
 
 * latest RHEL 6.x (or CentOS, SL, Oracle Linux, ...)
-* shared storage on all cluster nodes
-* working RHCS cluster
- * running **ricci** daemon on all nodes, working `ccs` command
- * same RHCS cluster node and OpenNebula names
+* cluster-wide shared filesystem (e.g. GFS2, OCFS, GPFS, GlusterFS, NFS etc.) mounted on `/opt/opennebula`
+* working RHCS cluster, esp.:
+ * **ricci** daemon on all nodes
+ * working `ccs` command
+ * identical RHCS node names and OpenNebula host names
 * [hypervisor][KVM] configured for OpenNebula
 * cluster management commands enabled via `sudo`
 
