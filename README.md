@@ -8,7 +8,7 @@ distributions may work as well, but not all required RHCS components
 in current versions should be present.
 
 Following scripts add support for managing **truly HA virtual machines**
-with OpenNebula via RHCS.
+with *OpenNebula* (ON) via RHCS.
 
 ### Supported features
 
@@ -30,13 +30,24 @@ with OpenNebula via RHCS.
 
 ## Cluster modes
 
-### single-node
-
-![RHCS cluster as single-node schema](https://raw.github.com/CERIT-SC/opennebula-rhcs/master/img/rhcs-single.png)
+There are two possible RHCS integrations into ON. *Single-node*, when cluster
+has a floating address which ON uses for connect.  *Multi-node*, when
+all cluster nodes are visible and connectable by ON. Currently only *multi-node* 
+setup is supported, the first approach would need modified information driver to
+report sum of CPUs, memory, etc. of all nodes.
 
 ### multi-node
 
 ![RHCS cluster as multi-node schema](https://raw.github.com/CERIT-SC/opennebula-rhcs/master/img/rhcs-multi.png)
+
+#### Advantages
+
+* each node's status visible to ON
+* follows ON's deployment scheduler configuration
+
+#### Disadvantages
+
+* virtual machines on failed nodes can't be managed until nodes are up again
 
 ## Physical host
 
@@ -108,7 +119,7 @@ Add new virtualization driver configuration into `oned.conf`:
     VM_MAD = [
         name       = "kvm_rhcs",
         executable = "one_vmm_exec",
-        arguments  = "-t 0 -r 0 rhcs",
+        arguments  = "-t 1 -r 0 rhcs",
         default    = "vmm_exec/vmm_exec_kvm.conf",
         type       = "kvm" ]
 
