@@ -42,6 +42,7 @@ if [ "x$deploy_id" != 'x' ]; then
     # create RHCS VM resource
     data=`$RHCS_CCS --addvm $deploy_id $rhcs_domain \
         "xmlfile=$domain" "use_virsh=1" \
+        "hypervisor=qemu" \
         "autostart=$RHCS_VM_AUTOSTART" \
         "recovery=$RHCS_VM_RECOVERY" \
         "max_restarts=$RHCS_VM_MAX_RESTARTS" \
