@@ -41,18 +41,8 @@ if [ "x$deploy_id" != 'x' ]; then
 
     # create RHCS VM resource
     data=`$RHCS_CCS --addvm $deploy_id $rhcs_domain \
-        "xmlfile=$domain" "use_virsh=1" \
-        "hypervisor=qemu" \
-        "autostart=$RHCS_VM_AUTOSTART" \
-        "recovery=$RHCS_VM_RECOVERY" \
-        "max_restarts=$RHCS_VM_MAX_RESTARTS" \
-        "restart_expire_time=$RHCS_VM_RESTART_EXPIRE_TIME" \
-        "tunnelled=$RHCS_VM_TUNNELLED" \
-        "migrate=$RHCS_VM_MIGRATE" \
-        "migration_uri=$QEMU_PROTOCOL://%s/system" \
-        "migration_mapping=$RHCS_VM_MIGRATION_MAPPING" \
-        "depend=$RHCS_VM_DEPEND" \
-        "depend_mode=$RHCS_VM_DEPEND_MODE" 2>&1`
+        xmlfile=$domain use_virsh=1 hypervisor=qemu \
+        $RHCS_VM_ARGS 2>&1`
 
     if [ "x$?" != "x0" ]; then
         error_message "Could not add RHCS VM $deploy_id: $data"

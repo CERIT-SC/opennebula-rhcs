@@ -25,14 +25,7 @@ export RHCS_CMAN_TOOL='sudo /usr/sbin/cman_tool'
 # (RHCS nodes must have same name as OpenNebula hosts)
 export CREATE_RHCS_DOMAIN=yes
 
-# VM resource parameters
-# see "/usr/share/cluster/vm.sh meta-data" output
-export RHCS_VM_AUTOSTART=1
-export RHCS_VM_RECOVERY=restart
-export RHCS_VM_MAX_RESTARTS=0
-export RHCS_VM_RESTART_EXPIRE_TIME=0
-export RHCS_VM_TUNNELLED=
-export RHCS_VM_MIGRATE=live
-export RHCS_VM_MIGRATION_MAPPING=
-export RHCS_VM_DEPEND=
-export RHCS_VM_DEPEND_MODE=hard
+# VM resource parameters, see:
+# $ /usr/share/cluster/vm.sh meta-data
+# $ ccs -h localhost --lsserviceopts vm
+export RHCS_VM_ARGS="migration_uri=$QEMU_PROTOCOL://%s/system __max_failures=3 __failure_expire_time=120"
