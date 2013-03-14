@@ -112,7 +112,9 @@ for change):
 
 ## OpenNebula server (driver configuration)
 
-Copy remote scripts into ??? .
+Copy remote scripts (`src/vmm_mad/remotes/rhcs/`) into
+`/var/lib/one/remotes/vmm/rhcs/` or `$ONE_LOCATION/var/remotes/vmm/rhcs/`
+(depends on your deployment type).
 
 Add new virtualization driver configuration into `oned.conf`:
 
